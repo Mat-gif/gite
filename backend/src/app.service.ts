@@ -4,6 +4,14 @@ import { MoreThan, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 
+export interface ReservationInt {
+  room: Room;
+  email: string;
+  start: Date;
+  end: Date;
+  extra: boolean;
+}
+
 @Injectable()
 export class AppService {
   constructor(
@@ -32,20 +40,24 @@ export class AppService {
     );
   }
 
-  calculateNight(reservation: Reservation): Reservation {
+  calculateNight(reservation: ReservationInt): number[] {
     const current = new Date(reservation.start);
-
+    let nightWeekend = 0;
+    let nightWeek = 0;
     while (current < reservation.end) {
       const day = current.getDay();
       if (day === 0 || day === 6) {
-        reservation.nightWeekend++;
+        nightWeekend++;
       } else {
-        reservation.nightWeek++;
+        if (day !== 1) {
+          nightWeek++;
+        }
       }
       current.setDate(current.getDate() + 1);
     }
-    return reservation;
+    return [nightWeek, nightWeekend];
   }
+
   async getFutureReservations(): Promise<Reservation[]> {
     const now = new Date();
     return this.reservationRepository.find({
@@ -54,7 +66,20 @@ export class AppService {
       },
     });
   }
+
   async getAllReservations(): Promise<Reservation[]> {
     return this.reservationRepository.find();
   }
+
+  // async createReservation(reservationInt: ReservationInt) {
+  //   const reservation = new Reservation(reservationInt);
+  //   const nights = this.calculateNight(reservationInt);
+  //   reservation.nightWeek = nights[0];
+  //   reservation.nightWeekend = nights[1];
+  //   reservation.totalPrice = nights[0] * 7000 + nights[1] * 5000;
+  //   if (reservation.extra) {
+  //     reservation.totalPrice += 1000;
+  //   }
+  //   return reservation;
+  // }
 }

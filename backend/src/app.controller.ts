@@ -1,5 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { AppService, ReservationInt } from './app.service';
 import { Reservation } from './entities/reservation.entity';
 import { Room } from './entities/room.entity';
 
@@ -29,7 +29,14 @@ export class AppController {
       new Date(start),
       new Date(end),
     );
-    console.log(rooms);
     return rooms;
   }
+
+  // @Post('create/reservation')
+  // async createReservation(
+  //   @Body() reservationInt: ReservationInt,
+  // ): Promise<Reservation> {
+  //   const reservation = await this.appService.createReservation(reservationInt);
+  //   return reservation;
+  // }
 }

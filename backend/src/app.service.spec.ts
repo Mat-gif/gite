@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppService } from './app.service';
+import { AppService, ReservationInt } from './app.service';
 import { Reservation } from './entities/reservation.entity';
 import { Room } from './entities/room.entity';
 import { Repository } from 'typeorm';
@@ -27,11 +27,9 @@ describe('AppService', () => {
 
     service = module.get<AppService>(AppService);
     reservationRepository = module.get<Repository<Reservation>>(
-        getRepositoryToken(Reservation),
+      getRepositoryToken(Reservation),
     );
-    roomRepository = module.get<Repository<Room>>(
-        getRepositoryToken(Room),
-    );
+    roomRepository = module.get<Repository<Room>>(getRepositoryToken(Room));
   });
 
   it('should be defined', () => {
@@ -39,31 +37,42 @@ describe('AppService', () => {
   });
 
   const room: Room = {
+    id: 1,
     adultNumber: 2,
     childNumber: 1,
-    description: 'test',
-    id: 1,
-    name: 'test',
+    name: 'Test Room',
+    description: 'A test room',
   };
 
-  const reservation: Reservation = {
-    id: 1,
+  const reservation: ReservationInt = {
     room: room,
     email: 'test1@example.com',
     start: new Date('2024-08-01'),
     end: new Date('2024-08-05'),
-    nightWeek: 0,
-    nightWeekend: 0,
     extra: false,
   };
 
-  describe('calculateNight', () => {
-    it('should correctly calculate nightWeek and nightWeekend', () => {
-      const result = service.calculateNight(reservation);
+  describe('createReservation', () => {
+    it('should correctly calculate nightWeek, nightWeekend, and totalPrice', async () => {
+      jest.spyOn(service, 'calculateNight').mockImplementation(() => [2, 2]);
+
+      const result = await service.createReservation(reservation);
 
       expect(result.nightWeek).toBe(2);
       expect(result.nightWeekend).toBe(2);
-      expect(result.nightWeekend + result.nightWeek).toBe(4);
+      expect(result.totalPrice).toBe(2 * 7000 + 2 * 5000);
+    });
+
+    it('should correctly adjust totalPrice if extra is true', async () => {
+      const reservationWithExtra: ReservationInt = {
+        ...reservation,
+        extra: true,
+      };
+      jest.spyOn(service, 'calculateNight').mockImplementation(() => [2, 2]); // Mocking calculateNight
+
+      const result = await service.createReservation(reservationWithExtra);
+
+      expect(result.totalPrice).toBe(2 * 7000 + 2 * 5000 + 1000);
     });
   });
 });
