@@ -1,16 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { Reservation } from './models/reservation.interface';
+import { Reservation } from './entities/reservation.entity';
+import { MoreThan, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Room } from './entities/room.entity';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
-  }
-  checkDispo(reservations: Reservation[], start: Date, end: Date): boolean {
-    return !reservations.some(
-      (reservation) => start < reservation.end && end > reservation.start,
+  constructor(
+    @InjectRepository(Reservation)
+    private reservationRepository: Repository<Reservation>,
+    @InjectRepository(Room)
+    private roomRepository: Repository<Room>,
+  ) {}
+
+  async getRoomNotBusy(start: Date, end: Date): Promise<Room[]> {
+    const reservations = await this.reservationRepository.find();
+    const rooms = await this.roomRepository.find(); // les chambres
+    //  les chambres occupées durant la période
+    const busyRooms = Array.from(
+      new Set(
+        reservations
+          .filter(
+            (reservation) => start < reservation.end && end > reservation.start,
+          )
+          .map((reservation) => reservation.room),
+      ),
+    );
+    // les chambres disponibles
+    return rooms.filter(
+      (room) => !busyRooms.some((busyRoom) => busyRoom.id === room.id),
     );
   }
+
   calculateNight(reservation: Reservation): Reservation {
     const current = new Date(reservation.start);
 
@@ -24,5 +45,16 @@ export class AppService {
       current.setDate(current.getDate() + 1);
     }
     return reservation;
+  }
+  async getFutureReservations(): Promise<Reservation[]> {
+    const now = new Date();
+    return this.reservationRepository.find({
+      where: {
+        start: MoreThan(now),
+      },
+    });
+  }
+  async getAllReservations(): Promise<Reservation[]> {
+    return this.reservationRepository.find();
   }
 }
