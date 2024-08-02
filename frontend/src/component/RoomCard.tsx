@@ -3,11 +3,15 @@ import {Room} from "../App";
 
 interface RoomCardProps {
     room: Room;
+    isSelected: boolean;
 }
 
-const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected }) => {
     return (
-        <div className="card" style={{ width: '18rem' }}>
+        <div
+            className={`card text-dark ${isSelected ? 'bg-primary text-white' : 'bg-light'}`}
+            style={{ width: '18rem', cursor: 'pointer' }}
+        >
             <img
                 className="card-img-top"
                 src="https://static.cotemaison.fr/medias_11542/w_749,h_419,c_crop,x_0,y_474/w_2000,h_1125,c_fill,g_north/v1499158598/un-dejeuner-sur-la-terrasse-entre-palmiers-et-eau-turquoise_5909658.jpg"
@@ -26,7 +30,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
         </div>
     );
 };
-
 export default RoomCard;
 
 

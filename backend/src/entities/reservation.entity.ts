@@ -1,14 +1,20 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Room } from './room.entity';
-import { ReservationInt } from '../app.service';
 
 @Entity('Reservation')
 export class Reservation {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
-  @ManyToOne(() => Room, { eager: true })
-  room: Room;
+  @ManyToMany(() => Room, (room) => room.reservations, { eager: true })
+  @JoinTable({ name: 'reservation_rooms' })
+  rooms: Room[];
 
   @Column({ length: 255 })
   email: string;
@@ -30,16 +36,4 @@ export class Reservation {
 
   @Column()
   totalPrice: number;
-
-  // constructor(reservation: ReservationInt) {
-  //   this.room = reservation.room;
-  //   this.email = reservation.email;
-  //   this.start = reservation.start;
-  //   this.end = reservation.end;
-  //   this.extra = reservation.extra;
-  //
-  //   this.nightWeek = 0;
-  //   this.nightWeekend = 0;
-  //   this.totalPrice = 0;
-  // }
 }

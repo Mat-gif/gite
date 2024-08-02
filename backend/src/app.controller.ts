@@ -25,18 +25,27 @@ export class AppController {
     @Param('start') start: string,
     @Param('end') end: string,
   ): Promise<Room[]> {
-    const rooms = await this.appService.getRoomNotBusy(
+    const rooms = await this.appService.getRoomsNotBusy(
       new Date(start),
       new Date(end),
     );
     return rooms;
   }
 
-  // @Post('create/reservation')
-  // async createReservation(
-  //   @Body() reservationInt: ReservationInt,
-  // ): Promise<Reservation> {
-  //   const reservation = await this.appService.createReservation(reservationInt);
-  //   return reservation;
-  // }
+  @Post('calculate/reservation')
+  async calculateReservation(
+    @Body() reservationInt: ReservationInt,
+  ): Promise<Reservation> {
+    const reservation =
+      await this.appService.calculateReservation(reservationInt);
+    return reservation;
+  }
+
+  @Post('confirm/reservation')
+  async confirmReservation(
+    @Body() reservation: Reservation,
+  ): Promise<Reservation> {
+    await this.appService.createReservation(reservation);
+    return reservation;
+  }
 }

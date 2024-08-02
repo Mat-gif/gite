@@ -1,11 +1,10 @@
 import React, { useState, ChangeEvent } from 'react';
 
 interface DatePickerProps {
-    label?: string;
     onDateChange?: (date: string) => void;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ label, onDateChange }) => {
+const DatePicker: React.FC<DatePickerProps> = ({  onDateChange }) => {
     const [selectedDate, setSelectedDate] = useState<string>('');
 
     const getToday = (): string => {
@@ -34,16 +33,22 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, onDateChange }) => {
     };
 
     return (
-        <div>
-            {label && <label>{label}</label>}
-            <input
-                type="date"
-                value={selectedDate}
-                onChange={handleChange}
-                min={getToday()} // Empêche la sélection de dates passées
-            />
+
+        <div className="col-auto">
+            <label className="visually-hidden" htmlFor="autoSizingInputGroup">Username</label>
+            <div className="input-group">
+                <div className="input-group-text">Départ</div>
+                <input
+                    className={"form-control"}
+                    type="date"
+                    value={selectedDate}
+                    onChange={handleChange}
+                    min={getToday()} // Empêche la sélection de dates passées
+                />
+            </div>
         </div>
-    );
+)
+    ;
 };
 
 export default DatePicker;
