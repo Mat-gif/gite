@@ -4,6 +4,7 @@ import { Reservation } from './entities/reservation.entity';
 import { Room } from './entities/room.entity';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
+import { Price } from './entities/price.entity';
 
 @Module({
   imports: [
@@ -14,10 +15,10 @@ import { AppController } from './app.controller';
       username: process.env.DB_USER || 'user',
       password: process.env.DB_PASS || 'password',
       database: process.env.DB_NAME || 'mydatabase',
-      entities: [Reservation, Room],
+      entities: [Reservation, Room, Price],
       synchronize: false,
     }),
-    TypeOrmModule.forFeature([Reservation, Room]),
+    TypeOrmModule.forFeature([Reservation, Room, Price]),
   ],
   providers: [AppService],
   exports: [AppService],

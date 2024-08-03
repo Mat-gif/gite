@@ -6,27 +6,26 @@ import axios from "axios";
 
 interface ReservationTableProps {
     reservation: Reservation;
+    onReservationConfirmed: () => void;
 }
-const ReservationTable: React.FC<ReservationTableProps> = ({ reservation }) => {
+const ReservationTable: React.FC<ReservationTableProps> = ({ reservation,onReservationConfirmed }) => {
 
-    const weekPrice = () => {
-        return reservation.rooms.length * 5000 * (reservation.nightWeek !== undefined ? reservation.nightWeek:  0);
-    };
-    const weekEndPrice = () => {
-        return reservation.rooms.length *reservation.rooms.length * 7000 * (reservation.nightWeekend !== undefined ? reservation.nightWeekend:  0);
-    };
-    const nights = (number? : number) => {
-        return reservation.rooms.length * (number !== undefined ? number:  0);
+
+    const nights = (number : number) => {
+        return reservation.rooms.length * number ;
     };
 
     const handleClick = async () => {
         try {
             const response = await axios.post('/api/confirm/reservation', reservation );
-            console.log('Réponse du serveur :', response.data);
-
-
+            if (response.status ===200 ) {
+                alert("La reservation a été enregistré")
+                onReservationConfirmed();
+            }else{
+                alert("Erreur, a reservation annulé")
+            }
         } catch (error) {
-            console.error('Erreur lors de la requête :', error);
+            alert("Une Erreur est survenue")
         }
     };
 
@@ -62,26 +61,26 @@ const ReservationTable: React.FC<ReservationTableProps> = ({ reservation }) => {
                 <tr>
                     <th scope="row">Nuits Semaine</th>
                     <td>{nights(reservation.nightWeek)}</td>
-                    <td>5000</td>
-                    <td>{weekPrice()}</td>
+                    <td>{reservation.nightWeekPrice}</td>
+                    <td>{nights(reservation.nightWeek)*reservation.nightWeekPrice}</td>
                 </tr>
                 <tr>
                     <th scope="row">Nuits Weekend</th>
                     <td>{nights(reservation.nightWeekend)}</td>
-                    <td>7000</td>
-                    <td>{weekEndPrice()}</td>
+                    <td>{reservation.nightWeekendPrice}</td>
+                    <td>{nights(reservation.nightWeekend)*reservation.nightWeekendPrice}</td>
                 </tr>
                 <tr>
                     <th scope="row">Lit Parapluie</th>
-                    <td>{reservation.extra ? 1 : 0}</td>
-                    <td>1000</td>
-                    <td>{reservation.extra ? 1000 : 0}</td>
+                    <td>{(reservation.extra ? 1 : 0)*reservation.rooms.length}</td>
+                    <td>{reservation.extraPrice}</td>
+                    <td>{(reservation.extra ? 1 : 0)*reservation.extraPrice*reservation.rooms.length}</td>
                 </tr>
                 <tr className={"table-active"}>
                     <th scope="row">Total</th>
                     <td></td>
                     <td></td>
-                    <td>{reservation.totalPrice ?? '0'}</td>
+                    <td>{reservation.totalPrice*reservation.rooms.length}</td>
                 </tr>
                 </tbody>
             </table>

@@ -35,6 +35,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ roomsSelected, start,
             setError('Veuillez saisir un email.');
             return;
         }
+        setError(null);
+
         try {
             const response = await axios.post(`/api/calculate/reservation`,
                 {
@@ -44,8 +46,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ roomsSelected, start,
                     email: email,
                     extra : isCheck
                 });
-            onReservationCalculate(response.data)
+            if (response.status === 200 ) {
+                onReservationCalculate(response.data)
+            }else{
+                setError(response.data);
+            }
         } catch (error) {
+            setError('Une erreur inattendue est survenue');
         }
     };
 

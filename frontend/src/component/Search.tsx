@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import DatePicker from "./DatePicker";
 import axios from "axios";
-import {Reservation, Room} from "../App";
+import { Room, RoomsSearch} from "../App";
 import Alert from "./Alert";
 
 interface SearchProps {
-    onRoomsUpdate: (reservation?: Reservation) => void;
-
+    onRoomsUpdate: (roomsSearch?: RoomsSearch) => void;
 }
 
 const Search: React.FC<SearchProps> = ({ onRoomsUpdate }) => {
@@ -28,8 +27,12 @@ const Search: React.FC<SearchProps> = ({ onRoomsUpdate }) => {
         setError(null);
         try {
             const response = await axios.get(`/api/start/${start}/end/${end}`);
-            setRooms(response.data);
-            onRoomsUpdate({ rooms, start, end });
+            if (response.status ===200 ) {
+                setRooms(response.data);
+                onRoomsUpdate({rooms, start, end});
+            }else {
+                setError(response.data);
+            }
         } catch (error) {
             setError('Une erreur inattendue est survenue');
         }

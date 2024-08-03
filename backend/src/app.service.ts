@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Reservation } from './entities/reservation.entity';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
+import { Price } from './entities/price.entity';
 
 export interface ReservationInt {
   rooms: Room[];
@@ -19,21 +20,35 @@ export class AppService {
     private reservationRepository: Repository<Reservation>,
     @InjectRepository(Room)
     private roomRepository: Repository<Room>,
+    @InjectRepository(Price)
+    private priceRepository: Repository<Price>,
   ) {}
 
+  //  Chambres disponible
   async getRoomsNotBusy(start: Date, end: Date): Promise<Room[]> {
+    if (new Date(start) >= new Date(end)) {
+      throw new BadRequestException(
+        'La date de début doit etre avant celle de fin',
+      );
+    }
+    if (new Date(start).getDay() === 1 || new Date(end).getDay() === 1) {
+      throw new BadRequestException(
+        'La date de début ou de fin ne doit pas être un lundi.',
+      );
+    }
     return this.roomRepository
-      .createQueryBuilder('r')
-      .leftJoin('reservation_rooms', 'r_res', 'r_res.room_id = r.id')
-      .leftJoin('Reservation', 'res', 'res.id = r_res.reservation_id')
-      .where('(res.start IS NULL OR res.end IS NULL)')
-      .orWhere('res.end <= :start OR res.start >= :end', {
+      .createQueryBuilder('ro')
+      .leftJoin('reservation_rooms', 're_ro', 're_ro.room_id = ro.id')
+      .leftJoin('Reservation', 're', 're.id = re_ro.reservation_id')
+      .where('(re.start IS NULL OR re.end IS NULL)')
+      .orWhere('re.end <= :start OR re.start >= :end', {
         start,
         end,
       })
       .getMany();
   }
 
+  // calcul des nombres de nuit
   private calculateNight(reservation: { start: Date; end: Date }): number[] {
     const current = new Date(reservation.start);
     const end = new Date(reservation.end);
@@ -48,52 +63,55 @@ export class AppService {
       }
       current.setDate(current.getDate() + 1);
     }
-
-    console.log('Nights Week:', nightWeek, 'Nights Weekend:', nightWeekend);
     return [nightWeek, nightWeekend];
   }
 
-  async getFutureReservations(): Promise<Reservation[]> {
-    const now = new Date();
-    return this.reservationRepository.find({
-      where: {
-        start: MoreThan(now),
-      },
-    });
-  }
-
+  // toute les reservations
   async getAllReservations(): Promise<Reservation[]> {
     return this.reservationRepository.find();
   }
 
+  // calculs des tarifs
   async calculateReservation(reservationInt: ReservationInt) {
-    const reservation: Reservation = this.newReservation(reservationInt);
-
-    const nights = this.calculateNight(reservationInt);
-    reservation.nightWeek = nights[0];
-    reservation.nightWeekend = nights[1];
-    reservation.totalPrice = nights[0] * 7000 + nights[1] * 5000;
-    if (reservation.extra) {
-      reservation.totalPrice += 1000;
-    }
-    return reservation;
+    return this.newReservation(
+      reservationInt,
+      this.calculateNight(reservationInt),
+    );
   }
 
+  // ajouter une réservation
   async createReservation(reservation: Reservation) {
-    console.log(reservation);
     return this.reservationRepository.save(reservation);
   }
 
-  private newReservation(reservationInt: ReservationInt) {
+  // creer une reservation
+  async newReservation(
+    reservationInt: ReservationInt,
+    nights: number[],
+  ): Promise<Reservation> {
+    const [weekendPrice, weekPrice, extraPrice] = await Promise.all([
+      this.priceRepository.findOneBy({
+        type: 'weekend',
+      }),
+      this.priceRepository.findOneBy({ type: 'week' }),
+      this.priceRepository.findOneBy({ type: 'extra' }),
+    ]);
+    const extra = reservationInt.extra ? 1 : 0;
     return {
       email: reservationInt.email,
       end: reservationInt.end,
       extra: reservationInt.extra,
-      nightWeek: 0,
-      nightWeekend: 0,
       rooms: reservationInt.rooms,
       start: reservationInt.start,
-      totalPrice: 0,
+      nightWeekPrice: weekendPrice.price,
+      nightWeekendPrice: weekPrice.price,
+      extraPrice: extraPrice.price,
+      nightWeek: nights[0],
+      nightWeekend: nights[1],
+      totalPrice:
+        nights[0] * weekendPrice.price +
+        nights[1] * weekPrice.price +
+        extra * extraPrice.price,
     };
   }
 }

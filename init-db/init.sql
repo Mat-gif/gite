@@ -8,7 +8,13 @@ CREATE TABLE IF NOT EXISTS Room (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
--- Table Reservation
+CREATE TABLE IF NOT EXISTS Price (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    price INT NOT NULL,
+    type VARCHAR(50) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
 CREATE TABLE IF NOT EXISTS Reservation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
@@ -17,7 +23,10 @@ CREATE TABLE IF NOT EXISTS Reservation (
     nightWeek INT,
     nightWeekend INT,
     totalPrice INT NOT NULL,
-    extra BOOLEAN NOT NULL
+    extra BOOLEAN NOT NULL,
+    nightWeekPrice INT NOT NULL,
+    nightWeekendPrice INT NOT NULL,
+    extraPrice INT NOT NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS reservation_rooms (
@@ -33,12 +42,17 @@ CREATE TABLE IF NOT EXISTS reservation_rooms (
 INSERT INTO Room (childNumber, adultNumber, name, description) VALUES
 (1, 2, 'Chambre le Cerf', 'Vue sur plaine.'),
 (1, 2, 'Chambre le Dawa', 'Vue sur mer.'),
-(1, 2, 'Chambre le Notou', 'Vue sur forêt.');
+(1, 2, 'Chambre le Notou', 'Vue sur foret.');
+
+INSERT INTO Price (type, price) VALUES
+("week", 5000 ),
+("weekend", 7000),
+("extra", 1000);
 
 -- Insertion dans Reservation
-INSERT INTO Reservation (email, start, end, nightWeek, nightWeekend, totalPrice, extra) VALUES
-('test@example.com', '2024-08-01 15:00:00', '2024-08-04 11:00:00', 2, 1, 17000, TRUE),
-('user@example.com', '2024-08-10 14:00:00', '2024-08-12 11:00:00', 0, 2, 14000, FALSE);
+INSERT INTO Reservation (email, start, end, nightWeek, nightWeekend, totalPrice, extra,nightWeekPrice,nightWeekendPrice,extraPrice) VALUES
+('test@example.com', '2024-08-01 15:00:00', '2024-08-04 11:00:00', 2, 1, 17000, TRUE,5000,7000,1000),
+('user@example.com', '2024-08-10 14:00:00', '2024-08-12 11:00:00', 0, 2, 14000, FALSE,5000,7000,1000);
 
 
 INSERT INTO reservation_rooms (reservation_id, room_id) VALUES

@@ -1,51 +1,68 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { AppService, ReservationInt } from './app.service';
 import { Reservation } from './entities/reservation.entity';
-import { Room } from './entities/room.entity';
-
-// Assurez-vous que ce chemin est correct
+import { Response } from 'express';
 
 @Controller('api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  hello() {
-    return 'hello';
-  }
   @Get('reservations')
   async getAllReservations(): Promise<Reservation[]> {
-    const reservations = await this.appService.getAllReservations();
-    console.log('Fetched Reservations:', reservations);
-    return reservations;
+    return await this.appService.getAllReservations();
   }
 
   @Get('start/:start/end/:end')
   async checkDispo(
+    @Res() res: Response,
     @Param('start') start: string,
     @Param('end') end: string,
-  ): Promise<Room[]> {
-    const rooms = await this.appService.getRoomsNotBusy(
-      new Date(start),
-      new Date(end),
-    );
-    return rooms;
+  ) {
+    try {
+      return res
+        .status(HttpStatus.OK)
+        .json(
+          await this.appService.getRoomsNotBusy(new Date(start), new Date(end)),
+        );
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
+    }
   }
 
   @Post('calculate/reservation')
   async calculateReservation(
+    @Res() res: Response,
     @Body() reservationInt: ReservationInt,
-  ): Promise<Reservation> {
-    const reservation =
-      await this.appService.calculateReservation(reservationInt);
-    return reservation;
+  ) {
+    try {
+      return res
+        .status(HttpStatus.OK)
+        .json(await this.appService.calculateReservation(reservationInt));
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
+    }
   }
 
   @Post('confirm/reservation')
   async confirmReservation(
+    @Res() res: Response,
     @Body() reservation: Reservation,
-  ): Promise<Reservation> {
-    await this.appService.createReservation(reservation);
-    return reservation;
+  ) {
+    try {
+      return res
+        .status(HttpStatus.OK)
+        .json(await this.appService.createReservation(reservation));
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
+    }
   }
 }

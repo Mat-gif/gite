@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Reservation, Room } from "../App";
+import { Room, RoomsSearch} from "../App";
 import RoomCard from "./RoomCard";
 
 interface ResultSearchProps {
     onRoomSelected: (roomsSelected: Room[]) => void;  // Modifier le type pour un tableau de chambres
-    reservation: Reservation;
+    roomsSearch: RoomsSearch;
     rooms?: Room[];
 }
 
-const ResultSearch: React.FC<ResultSearchProps> = ({ reservation, rooms, onRoomSelected }) => {
+const ResultSearch: React.FC<ResultSearchProps> = ({ roomsSearch, rooms, onRoomSelected }) => {
     const [selectedRooms, setSelectedRooms] = useState<Room[]>([]);
 
     const handleRoomSelect = (room: Room) => {
@@ -31,11 +31,11 @@ const ResultSearch: React.FC<ResultSearchProps> = ({ reservation, rooms, onRoomS
 
     return (
         <div className={"row d-flex justify-content-center text-center"}>
-            { reservation.rooms.length > 0 && (
+            { roomsSearch.rooms.length > 0 && (
                 <div className="mt-4 ">
-                    <h2>Chambres disponibles du {reservation.start} au {reservation.end}</h2>
+                    <h2>Chambres disponibles du {roomsSearch.start} au {roomsSearch.end}</h2>
                     <div className="d-flex flex-wrap gap-3 justify-content-center mt-4">
-                        {reservation.rooms.map((room) => (
+                        {roomsSearch.rooms.map((room) => (
                             <div
                                 key={room.id}
                                 onClick={() => handleRoomSelect(room)}

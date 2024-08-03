@@ -1,11 +1,9 @@
 import './App.css';
 import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import RoomCard from "./component/RoomCard";
-import Search from "./component/Search";
-import ResultSearch from "./component/ResultSearch";
-import ReservationForm from "./component/ReservationForm";
-import ReservationTable from "./component/ReservationTable";
+import {Tab, TabList, TabPanel, Tabs} from "react-tabs";
+import Client from "./component/Client";
+import Admin from "./component/Admin";
 
 export interface Room {
     id: number;
@@ -19,57 +17,63 @@ export interface Reservation {
     rooms : Room[];
     start : string;
     end : string;
-    email? : string;
-    extra? : boolean;
-    nightWeek? : number;
-    totalPrice?: number;
-    nightWeekend?: number;
+    email : string;
+    extra : boolean;
+    nightWeek : number;
+    totalPrice: number;
+    nightWeekend: number;
     id?: number;
+    nightWeekPrice: number;
+    nightWeekendPrice: number;
+    extraPrice: number;
+}
 
+export interface RoomsSearch{
+    rooms : Room[];
+    start : string;
+    end : string;
 }
 
 
 const App: React.FC = () => {
-    const [reservation, setReservation] = useState<Reservation>();
-    const [roomsSelected, setRoomSelected] = useState<Room[]>([]);
-    const [tarif, setTarif] = useState<Reservation>();
+    const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-    const handleRoomsUpdate = (reservation?: Reservation) => {
-        setReservation(reservation);
-    };
-    const handleRoomSelected = (rooms: Room[]) => {
-        setTarif(undefined)
-        setRoomSelected(rooms);
-    };
-
-    const handleReservationCalculate= (reservation: Reservation) => {
-        setTarif(reservation);
+    const handleSelect = (index: number) => {
+        setSelectedIndex(index);
     };
 
     return (
-        <div className="App dark-mode">
-            <div className="pt-4">
-                <h1 className="text-center">Calédo-Gite</h1>
-            </div>
-            <Search onRoomsUpdate={handleRoomsUpdate}/>
-            <div className={"w-75 mx-auto mt-4"}>
-                <div className={"row d-flex justify-content-center"}>
-                    {reservation !== undefined && (
-                        <ResultSearch reservation={reservation} onRoomSelected={handleRoomSelected}/>)}
+        <div className="App dark-mode p-4">
+            <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
+                <div className="row">
+                    <div className="col">
+                        <TabList className="nav nav-tabs">
+                            <Tab className="nav-item">
+                                <a className={`nav-link ${selectedIndex === 0 ? 'active' : ''}`} href="#tab1">
+                                    Faire une reservation
+                                </a>
+                            </Tab>
+                            <Tab className="nav-item">
+                                <a className={`nav-link ${selectedIndex === 1 ? 'active' : ''}`} href="#tab2">
+                                    Infos (Admin)
+                                </a>
+                            </Tab>
+                        </TabList>
+                    </div>
                 </div>
-            </div>
-            <div className={"row d-flex justify-content-center"}>
-                {reservation !== undefined && roomsSelected.length > 0 && (
-                    <ReservationForm roomsSelected={roomsSelected} start={reservation.start} end={reservation.end}
-                                     onReservationCalculate={handleReservationCalculate}/>)}
-            </div>
-            <div className={"row d-flex justify-content-center"}>
-                {tarif !== undefined && (    <ReservationTable reservation={tarif} />
-                )}
-            </div>
+                <div className="row mt-4">
+                    <div className="col">
+                        <TabPanel>
+                            <Client/>
+                        </TabPanel>
+                        <TabPanel>
+                            <Admin/>
+                        </TabPanel>
+                    </div>
+                </div>
+            </Tabs>
         </div>
     )
-        ;
 };
 
 export default App;

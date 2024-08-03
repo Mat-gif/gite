@@ -13,7 +13,11 @@ export class Reservation {
   id?: number;
 
   @ManyToMany(() => Room, (room) => room.reservations, { eager: true })
-  @JoinTable({ name: 'reservation_rooms' })
+  @JoinTable({
+    name: 'reservation_rooms',
+    joinColumn: { name: 'reservation_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'room_id', referencedColumnName: 'id' },
+  })
   rooms: Room[];
 
   @Column({ length: 255 })
@@ -36,4 +40,13 @@ export class Reservation {
 
   @Column()
   totalPrice: number;
+
+  @Column()
+  nightWeekPrice: number;
+
+  @Column()
+  nightWeekendPrice: number;
+
+  @Column({ type: 'boolean' })
+  extraPrice: number;
 }
