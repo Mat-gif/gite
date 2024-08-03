@@ -1,11 +1,13 @@
 import React, { useState, ChangeEvent } from 'react';
+import Swal from "sweetalert2";
 
 interface DatePickerProps {
-    onDateChange?: (date: string) => void;
+    onDateChange: (date: string) => void;
     label : string;
+    isStart? : boolean;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({  onDateChange,label }) => {
+const DatePicker: React.FC<DatePickerProps> = ({  onDateChange,label,isStart }) => {
     const [selectedDate, setSelectedDate] = useState<string>('');
 
     const getToday = (): string => {
@@ -21,15 +23,29 @@ const DatePicker: React.FC<DatePickerProps> = ({  onDateChange,label }) => {
         return day === 1;
     };
 
+    const isTuesday = (date: string): boolean => {
+        const day = new Date(date).getDay();
+        return day === 2;
+    };
+
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         const newDate = event.target.value;
-        if (newDate && !isMonday(newDate)) {
+        if (newDate && (( isStart && !isMonday(newDate))|| (!isStart && !isTuesday(newDate)) )) {
             setSelectedDate(newDate);
-            if (onDateChange) {
-                onDateChange(newDate);
-            }
+
+            onDateChange(newDate);
+
+
         } else {
-            alert("Vous ne pouvez pas sélectionner un lundi.");
+            let message = isStart ? "Vous ne pouvez pas arriver un lundi." : "Vous ne pouvez pas partir un mardi."
+
+            Swal.fire({
+                title: 'Attention !',
+                text: message,
+                icon: 'warning',
+                confirmButtonText: 'ok'
+            })
+
         }
     };
 

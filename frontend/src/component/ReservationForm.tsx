@@ -38,7 +38,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ roomsSelected, start,
         setError(null);
 
         try {
-            const response = await axios.post(`/api/calculate/reservation`,
+            const response = await axios.post<Reservation>(`/api/calculate/reservation`,
                 {
                     rooms: roomsSelected,
                     start: new Date(start),

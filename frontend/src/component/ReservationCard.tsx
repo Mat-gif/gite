@@ -2,17 +2,33 @@ import React from 'react';
 import { Reservation } from "../App";
 import {format} from "date-fns";
 import {fr} from "date-fns/locale";
+import Swal from "sweetalert2";
+import PriceTable from "./PriceTable";
+import ReactDOMServer from 'react-dom/server';
 
 interface ReservationCardProps {
     reservations?: Reservation[];
 }
 
 const ReservationCard: React.FC<ReservationCardProps> = ({ reservations }) => {
+
+    const handleCardClick = (reservation : Reservation) => {
+        const priceTableHtml = ReactDOMServer.renderToString(<div className="container-fluid" style={{ width: '100%' }} ><PriceTable reservation={reservation} /></div>);
+
+        Swal.fire({
+            html: priceTableHtml,
+            icon: 'info',
+            titleText:"Informations pour "+reservation.rooms.length+" chambre(s)",
+            confirmButtonText: 'ok',
+            width:"50vw",
+        })
+    };
+
     return (
         <div className="container">
             <div className="row d-flex justify-content-center ">
                 {reservations?.map((reservation) => (
-                    <div className="col-md-6 col-lg-3 mb-4" key={reservation.id}>
+                    <div className="col-md-6 col-lg-3 mb-4" key={reservation.id} onClick={() => handleCardClick(reservation)} style={{ cursor: 'pointer' }}>
                         <div className="card text-dark bg-light">
                             <div className="card-body">
                                 <h5 className="card-title">Reservation N°{reservation.id}</h5>

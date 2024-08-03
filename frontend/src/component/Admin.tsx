@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import ReservationCard from "./ReservationCard";
 import { Reservation } from "../App";
 import axios, {AxiosError} from "axios";
+import Swal from "sweetalert2";
+import ReservationTable from "./ReservationTable";
+import PriceTable from "./PriceTable";
 
 interface AdminProps {}
 
@@ -14,7 +17,7 @@ const Admin: React.FC<AdminProps> = () => {
     useEffect(() => {
         const fetchReservations = async () => {
             try {
-                const response = await axios.get(`/api/reservations`);
+                const response = await axios.get<Reservation[]>(`/api/reservations`);
                 setReservations(response.data);
             } catch (error) {
                 error instanceof  AxiosError ? setError(error.response?.data): setError("Une erreur est survenue.")
@@ -29,12 +32,17 @@ const Admin: React.FC<AdminProps> = () => {
         return <p>Erreur : {error}</p>;
     }
 
+
     return (
         <div>
             <div className="text-center">
-                <h1>Liste des Réservations</h1>
+
+                <h1 className={"mb-4"}>Liste des Réservations</h1>
+                <div className={"mb-4"}>Selectionnez une réservation pour plus d'informations</div>
+
+
             </div>
-            <ReservationCard reservations={reservations} />
+            <ReservationCard reservations={reservations}/>
         </div>
     );
 };

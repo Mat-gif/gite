@@ -47,6 +47,6 @@ export class Reservation {
   @Column()
   nightWeekendPrice: number;
 
-  @Column({ type: 'boolean' })
+  @Column()
   extraPrice: number;
 }

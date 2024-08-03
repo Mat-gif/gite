@@ -33,7 +33,7 @@ export class AppService {
         'La date de début doit etre avant celle de fin',
       );
     }
-    if (start.getDay() === 1 || end.getDay() === 1) {
+    if (start.getDay() === 1 || end.getDay() === 2) {
       throw new BadRequestException(
         'La date de début ou de fin ne doit pas être un lundi.',
       );
@@ -44,18 +44,20 @@ export class AppService {
       .createQueryBuilder('room')
       .leftJoin('room.reservations', 'reservation')
       .where('reservation.start < :endDate AND reservation.end > :startDate', {
-        startDate: start.toISOString(),
-        endDate: end.toISOString(),
+        startDate: start,
+        endDate: end,
       })
       .getMany();
-
     const occupiedRoomIds = occupiedRooms.map((room) => room.id);
 
     // Récupérer toutes les chambres et exclure celles qui sont occupées
-    return await this.roomRepository
-      .createQueryBuilder('room')
-      .where('room.id NOT IN (:...occupiedRoomIds)', { occupiedRoomIds })
-      .getMany();
+    const roomsQueryBuilder = this.roomRepository.createQueryBuilder('room');
+    if (occupiedRoomIds.length > 0) {
+      roomsQueryBuilder.where('room.id NOT IN (:...occupiedRoomIds)', {
+        occupiedRoomIds,
+      });
+    }
+    return await roomsQueryBuilder.getMany();
   }
 
   // calcul des nombres de nuit
@@ -66,7 +68,7 @@ export class AppService {
     let nightWeek = 0;
     while (current < end) {
       const day = current.getDay();
-      if (day === 0 || day === 6) {
+      if (day === 5 || day === 6) {
         nightWeekend += 1;
       } else if (day !== 1) {
         nightWeek += 1;

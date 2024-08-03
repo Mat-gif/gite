@@ -3,6 +3,8 @@ import {Reservation, Room} from "../App";
 import {format} from "date-fns";
 import { fr } from 'date-fns/locale';
 import axios, {AxiosError} from "axios";
+import Swal from "sweetalert2";
+import PriceTable from "./PriceTable";
 
 interface ReservationTableProps {
     reservation: Reservation;
@@ -11,17 +13,25 @@ interface ReservationTableProps {
 const ReservationTable: React.FC<ReservationTableProps> = ({ reservation,onReservationConfirmed }) => {
 
 
-    const nights = (number : number) => {
-        return reservation.rooms.length * number ;
-    };
-
     const handleClick = async () => {
         try {
-            const response = await axios.post('/api/confirm/reservation', reservation );
-            alert("La reservation a été enregistré")
+            const response = await axios.post<Reservation>('/api/confirm/reservation', reservation );
+            await Swal.fire({
+                title: 'Merci !',
+                text: "La reservation a été enregistré",
+                icon: 'success',
+                confirmButtonText: 'ok'
+            })
             onReservationConfirmed();
         } catch (error) {
-            error instanceof  AxiosError ? alert(error.response?.data): alert("Erreur, reservation annulé")
+            let message = error instanceof  AxiosError ? error.response?.data: "Erreur, reservation annulé"
+            await Swal.fire({
+                title: 'Attention !',
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'ok'
+            })
+
             onReservationConfirmed();
 
         }
@@ -46,42 +56,7 @@ const ReservationTable: React.FC<ReservationTableProps> = ({ reservation,onReser
                 ))}
                 </tbody>
             </table>
-            <table className="table">
-                <thead className="thead-dark">
-                <tr className={"table-active"}>
-                    <th scope="col"></th>
-                    <th scope="col">Unité</th>
-                    <th scope="col">Prix Unitaire</th>
-                    <th scope="col">Prix</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th scope="row">Nuits Semaine</th>
-                    <td>{nights(reservation.nightWeek)}</td>
-                    <td>{reservation.nightWeekPrice}</td>
-                    <td>{nights(reservation.nightWeek)*reservation.nightWeekPrice}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Nuits Weekend</th>
-                    <td>{nights(reservation.nightWeekend)}</td>
-                    <td>{reservation.nightWeekendPrice}</td>
-                    <td>{nights(reservation.nightWeekend)*reservation.nightWeekendPrice}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Lit Parapluie</th>
-                    <td>{(reservation.extra ? 1 : 0)*reservation.rooms.length}</td>
-                    <td>{reservation.extraPrice}</td>
-                    <td>{(reservation.extra ? 1 : 0)*reservation.extraPrice*reservation.rooms.length}</td>
-                </tr>
-                <tr className={"table-active"}>
-                    <th scope="row">Total</th>
-                    <td></td>
-                    <td></td>
-                    <td>{reservation.totalPrice*reservation.rooms.length}</td>
-                </tr>
-                </tbody>
-            </table>
+            <PriceTable reservation={reservation}/>
 
             <div className={" d-flex justify-content-center text-center"}>
                 <button className="btn btn-primary" onClick={handleClick} >Confirmer</button>
