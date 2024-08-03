@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DatePicker from "./DatePicker";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import { Room, RoomsSearch} from "../App";
 import Alert from "./Alert";
 
@@ -27,14 +27,14 @@ const Search: React.FC<SearchProps> = ({ onRoomsUpdate }) => {
         setError(null);
         try {
             const response = await axios.get(`/api/start/${start}/end/${end}`);
-            if (response.status ===200 ) {
+            if (response.data.length>0) {
                 setRooms(response.data);
                 onRoomsUpdate({rooms, start, end});
-            }else {
-                setError(response.data);
+            } else {
+                setError('Aucune chambre disponibles pour ces dates');
             }
         } catch (error) {
-            setError('Une erreur inattendue est survenue');
+            error instanceof  AxiosError ? setError(error.response?.data): setError("Une erreur est survenue.")
         }
     };
 
@@ -50,10 +50,10 @@ const Search: React.FC<SearchProps> = ({ onRoomsUpdate }) => {
                 {error && <Alert message={error}/>}
                 <div className="row d-flex justify-content-center ">
                     <div className="col-auto">
-                        <DatePicker onDateChange={handleDateChange(true)} />
+                        <DatePicker onDateChange={handleDateChange(true)} label={"Départ"} />
                     </div>
                     <div className="col-auto">
-                        <DatePicker onDateChange={handleDateChange(false)}/>
+                        <DatePicker onDateChange={handleDateChange(false) } label={"Arrivée"}/>
                     </div>
                     <div className="col-auto">
                         <button type="submit" className="btn btn-primary">

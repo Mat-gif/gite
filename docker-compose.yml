@@ -9,12 +9,13 @@ services:
       MYSQL_DATABASE: mydatabase
       MYSQL_USER: user
       MYSQL_PASSWORD: password
-    ports:
-      - "3307:3306"
+#    ports:
+#      - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
       - ./init-db:/docker-entrypoint-initdb.d
-
+    networks:
+      - my-backend
 
   backend:
     build:
@@ -22,8 +23,8 @@ services:
     container_name: nestjs_backend
     depends_on:
       - db
-    ports:
-      - "3001:3000"
+#    ports:
+#      - "3001:3000"
     volumes:
       - ./backend:/app
     environment:
@@ -32,6 +33,8 @@ services:
       DB_USER: user
       DB_PASS: password
       DB_NAME: mydatabase
+    networks:
+      - my-backend
 
   frontend:
     build:
@@ -43,6 +46,16 @@ services:
       - ./frontend:/app
     depends_on:
       - backend
+    networks:
+      - my-frontend
+      - my-backend
+
+networks:
+  my-frontend:
+    driver: bridge
+  my-backend:
+    driver: bridge
+
 
 volumes:
   db-data:

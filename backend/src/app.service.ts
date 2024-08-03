@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Reservation } from './entities/reservation.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,8 @@ export interface ReservationInt {
 
 @Injectable()
 export class AppService {
+  private readonly logger = new Logger(AppService.name);
+
   constructor(
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
@@ -26,25 +28,33 @@ export class AppService {
 
   //  Chambres disponible
   async getRoomsNotBusy(start: Date, end: Date): Promise<Room[]> {
-    if (new Date(start) >= new Date(end)) {
+    if (start >= end) {
       throw new BadRequestException(
         'La date de début doit etre avant celle de fin',
       );
     }
-    if (new Date(start).getDay() === 1 || new Date(end).getDay() === 1) {
+    if (start.getDay() === 1 || end.getDay() === 1) {
       throw new BadRequestException(
         'La date de début ou de fin ne doit pas être un lundi.',
       );
     }
-    return this.roomRepository
-      .createQueryBuilder('ro')
-      .leftJoin('reservation_rooms', 're_ro', 're_ro.room_id = ro.id')
-      .leftJoin('Reservation', 're', 're.id = re_ro.reservation_id')
-      .where('(re.start IS NULL OR re.end IS NULL)')
-      .orWhere('re.end <= :start OR re.start >= :end', {
-        start,
-        end,
+
+    // Récupérer les chambres occupées dans la période donnée
+    const occupiedRooms = await this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.reservations', 'reservation')
+      .where('reservation.start < :endDate AND reservation.end > :startDate', {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
       })
+      .getMany();
+
+    const occupiedRoomIds = occupiedRooms.map((room) => room.id);
+
+    // Récupérer toutes les chambres et exclure celles qui sont occupées
+    return await this.roomRepository
+      .createQueryBuilder('room')
+      .where('room.id NOT IN (:...occupiedRoomIds)', { occupiedRoomIds })
       .getMany();
   }
 
@@ -81,6 +91,26 @@ export class AppService {
 
   // ajouter une réservation
   async createReservation(reservation: Reservation) {
+    const occupiedRooms = await this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.reservations', 'reservation')
+      .where('reservation.start < :endDate AND reservation.end > :startDate', {
+        startDate: reservation.start,
+        endDate: reservation.end,
+      })
+      .andWhere('room.id IN (:...occupiedRoomIds)', {
+        occupiedRoomIds: reservation.rooms.map((room) => room.id),
+      })
+      .getMany();
+
+    if (occupiedRooms.length > 0) {
+      throw new BadRequestException("La chambre n'est plus disponible.");
+    }
+
+    const roomLabels = reservation.rooms.map((room) => room.name).join(', ');
+    this.logger.log(
+      `Nouvelle réservation du ${reservation.start} au ${reservation.start}${reservation.start} pour les chambres ${roomLabels}`,
+    );
     return this.reservationRepository.save(reservation);
   }
 

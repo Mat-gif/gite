@@ -2,7 +2,7 @@ import React from 'react';
 import {Reservation, Room} from "../App";
 import {format} from "date-fns";
 import { fr } from 'date-fns/locale';
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 
 interface ReservationTableProps {
     reservation: Reservation;
@@ -18,14 +18,12 @@ const ReservationTable: React.FC<ReservationTableProps> = ({ reservation,onReser
     const handleClick = async () => {
         try {
             const response = await axios.post('/api/confirm/reservation', reservation );
-            if (response.status ===200 ) {
-                alert("La reservation a été enregistré")
-                onReservationConfirmed();
-            }else{
-                alert("Erreur, a reservation annulé")
-            }
+            alert("La reservation a été enregistré")
+            onReservationConfirmed();
         } catch (error) {
-            alert("Une Erreur est survenue")
+            error instanceof  AxiosError ? alert(error.response?.data): alert("Erreur, reservation annulé")
+            onReservationConfirmed();
+
         }
     };
 

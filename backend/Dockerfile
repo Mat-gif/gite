@@ -17,5 +17,5 @@ RUN npm install -g ts-node
 # Exposer le port sur lequel l'application NestJS écoute
 EXPOSE 3000
 
-# Démarrer l'application en mode développement avec le rechargement automatique
+# Démarrer l'application ( mode développement : rechargement automatique)
 CMD ["npm", "run", "start:dev"]

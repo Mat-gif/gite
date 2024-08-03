@@ -1,7 +1,7 @@
 
 import React, {useState} from 'react';
 import {Room,Reservation} from "../App";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import Alert from "./Alert";
 
 
@@ -46,13 +46,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ roomsSelected, start,
                     email: email,
                     extra : isCheck
                 });
-            if (response.status === 200 ) {
-                onReservationCalculate(response.data)
-            }else{
-                setError(response.data);
-            }
+            onReservationCalculate(response.data)
         } catch (error) {
-            setError('Une erreur inattendue est survenue');
+            error instanceof  AxiosError ? setError(error.response?.data): setError("Une erreur est survenue.")
         }
     };
 
