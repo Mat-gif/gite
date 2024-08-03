@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 import { Price } from './entities/price.entity';
+import { RoomRepository } from './repositories/room.repository';
 
 export interface ReservationInt {
   rooms: Room[];
@@ -21,7 +22,7 @@ export class AppService {
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
     @InjectRepository(Room)
-    private roomRepository: Repository<Room>,
+    private roomRepository: RoomRepository,
     @InjectRepository(Price)
     private priceRepository: Repository<Price>,
   ) {}
@@ -38,30 +39,17 @@ export class AppService {
         'La date de début ou de fin ne doit pas être un lundi.',
       );
     }
-
-    // Récupérer les chambres occupées dans la période donnée
-    const occupiedRooms = await this.roomRepository
-      .createQueryBuilder('room')
-      .leftJoin('room.reservations', 'reservation')
-      .where('reservation.start < :endDate AND reservation.end > :startDate', {
-        startDate: start,
-        endDate: end,
-      })
-      .getMany();
-    const occupiedRoomIds = occupiedRooms.map((room) => room.id);
-
-    // Récupérer toutes les chambres et exclure celles qui sont occupées
-    const roomsQueryBuilder = this.roomRepository.createQueryBuilder('room');
-    if (occupiedRoomIds.length > 0) {
-      roomsQueryBuilder.where('room.id NOT IN (:...occupiedRoomIds)', {
-        occupiedRoomIds,
-      });
-    }
-    return await roomsQueryBuilder.getMany();
+    return await this.roomRepository.findAvailableRooms(start, end);
   }
 
   // calcul des nombres de nuit
   private calculateNight(reservation: { start: Date; end: Date }): number[] {
+    if (reservation.start >= reservation.end) {
+      throw new BadRequestException(
+        'La date de début doit etre avant celle de fin',
+      );
+    }
+
     const current = new Date(reservation.start);
     const end = new Date(reservation.end);
     let nightWeekend = 0;
@@ -93,17 +81,11 @@ export class AppService {
 
   // ajouter une réservation
   async createReservation(reservation: Reservation) {
-    const occupiedRooms = await this.roomRepository
-      .createQueryBuilder('room')
-      .leftJoin('room.reservations', 'reservation')
-      .where('reservation.start < :endDate AND reservation.end > :startDate', {
-        startDate: reservation.start,
-        endDate: reservation.end,
-      })
-      .andWhere('room.id IN (:...occupiedRoomIds)', {
-        occupiedRoomIds: reservation.rooms.map((room) => room.id),
-      })
-      .getMany();
+    const occupiedRooms = await this.roomRepository.checkRoomAvailability(
+      reservation.start,
+      reservation.end,
+      reservation.rooms.map((room) => room.id),
+    );
 
     if (occupiedRooms.length > 0) {
       throw new BadRequestException("La chambre n'est plus disponible.");
@@ -138,12 +120,13 @@ export class AppService {
       nightWeekPrice: weekendPrice.price,
       nightWeekendPrice: weekPrice.price,
       extraPrice: extraPrice.price,
-      nightWeek: nights[0],
-      nightWeekend: nights[1],
+      nightWeek: nights[0] * reservationInt.rooms.length,
+      nightWeekend: nights[1] * reservationInt.rooms.length,
       totalPrice:
-        nights[0] * weekendPrice.price +
-        nights[1] * weekPrice.price +
-        extra * extraPrice.price,
+        (nights[0] * weekendPrice.price +
+          nights[1] * weekPrice.price +
+          extra * extraPrice.price) *
+        reservationInt.rooms.length,
     };
   }
 }

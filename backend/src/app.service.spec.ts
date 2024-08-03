@@ -1,14 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppService, ReservationInt } from './app.service';
-import { Reservation } from './entities/reservation.entity';
+import { AppService } from './app.service';
+import { Price } from './entities/price.entity';
 import { Room } from './entities/room.entity';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { BadRequestException } from '@nestjs/common';
+import { Reservation } from './entities/reservation.entity';
 
 describe('AppService', () => {
   let service: AppService;
+  let priceRepository: Repository<Price>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let reservationRepository: Repository<Reservation>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let roomRepository: Repository<Room>;
+
+  const weekendPrice = { price: 7000 };
+  const weekPrice = { price: 5000 };
+  const extraPrice = { price: 1000 };
+
+  const types = {
+    weekend: weekendPrice,
+    week: weekPrice,
+    extra: extraPrice,
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -16,11 +31,15 @@ describe('AppService', () => {
         AppService,
         {
           provide: getRepositoryToken(Reservation),
-          useClass: Repository, // Vous pouvez aussi utiliser un mock ici si nécessaire
+          useClass: Repository,
         },
         {
           provide: getRepositoryToken(Room),
-          useClass: Repository, // Vous pouvez aussi utiliser un mock ici si nécessaire
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(Price),
+          useClass: Repository,
         },
       ],
     }).compile();
@@ -30,49 +49,85 @@ describe('AppService', () => {
       getRepositoryToken(Reservation),
     );
     roomRepository = module.get<Repository<Room>>(getRepositoryToken(Room));
+    priceRepository = module.get<Repository<Price>>(getRepositoryToken(Price));
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  const room: Room = {
-    id: 1,
-    adultNumber: 2,
-    childNumber: 1,
-    name: 'Test Room',
-    description: 'A test room',
-  };
-
-  const reservation: ReservationInt = {
-    room: room,
-    email: 'test1@example.com',
-    start: new Date('2024-08-01'),
-    end: new Date('2024-08-05'),
-    extra: false,
-  };
-
-  describe('createReservation', () => {
-    it('should correctly calculate nightWeek, nightWeekend, and totalPrice', async () => {
-      jest.spyOn(service, 'calculateNight').mockImplementation(() => [2, 2]);
-
-      const result = await service.createReservation(reservation);
-
-      expect(result.nightWeek).toBe(2);
-      expect(result.nightWeekend).toBe(2);
-      expect(result.totalPrice).toBe(2 * 7000 + 2 * 5000);
+  describe('calculateNight', () => {
+    it('calculate nights correctly', () => {
+      const reservation = {
+        start: new Date('2024-08-01T00:00:00Z'), // Jeudi
+        end: new Date('2024-08-04T00:00:00Z'), // Dimanche
+      };
+      const [nightWeek, nightWeekend] = service['calculateNight'](reservation);
+      expect(nightWeek).toBe(1); // jeudi
+      expect(nightWeekend).toBe(2); // vendredi + samedi
     });
 
-    it('should correctly adjust totalPrice if extra is true', async () => {
-      const reservationWithExtra: ReservationInt = {
-        ...reservation,
-        extra: true,
+    it('return exception if start = end', () => {
+      const reservation = {
+        start: new Date('2024-08-01T00:00:00Z'),
+        end: new Date('2024-08-01T00:00:00Z'),
       };
-      jest.spyOn(service, 'calculateNight').mockImplementation(() => [2, 2]); // Mocking calculateNight
+      expect(() => service['calculateNight'](reservation)).toThrow(
+        new BadRequestException(
+          'La date de début doit etre avant celle de fin',
+        ),
+      );
+    });
 
-      const result = await service.createReservation(reservationWithExtra);
+    it('return exception  if start > end', () => {
+      const reservation = {
+        start: new Date('2024-08-05T00:00:00Z'),
+        end: new Date('2024-08-01T00:00:00Z'),
+      };
+      expect(() => service['calculateNight'](reservation)).toThrow(
+        new BadRequestException(
+          'La date de début doit etre avant celle de fin',
+        ),
+      );
+    });
+  });
 
-      expect(result.totalPrice).toBe(2 * 7000 + 2 * 5000 + 1000);
+  // simuler un acces BDD
+  const mockPriceRepository = (types: { [key: string]: any }) => {
+    jest
+      .spyOn(priceRepository, 'findOneBy')
+      .mockImplementation(({ type }: { type: string }) => {
+        return Promise.resolve(types[type] || null);
+      });
+  };
+
+  const testTotalPriceCalculation = async (
+    reservationInt: any,
+    expectedTotalPrice: number,
+    types: { [key: string]: any },
+  ) => {
+    mockPriceRepository(types); /// Mock
+    const result = await service.newReservation(reservationInt, [2, 2]); // Call the service method
+    expect(result.totalPrice).toBe(expectedTotalPrice); // Assertion
+  };
+
+  describe('newReservation', () => {
+    it('should calculate totalPrice with 2 rooms and extra correctly', async () => {
+      const reservationInt = {
+        email: 'test@example.com',
+        start: new Date('2024-08-01T00:00:00Z'),
+        end: new Date('2024-08-05T00:00:00Z'),
+        extra: true,
+        rooms: [new Room(), new Room()],
+      };
+      await testTotalPriceCalculation(reservationInt, 50000, types);
+    });
+
+    it('calculate totalPrice with 1 room no extra correctly', async () => {
+      const reservationInt = {
+        email: 'test@example.com',
+        start: new Date('2024-08-01T00:00:00Z'),
+        end: new Date('2024-08-05T00:00:00Z'),
+        extra: false,
+        rooms: [new Room()],
+      };
+      await testTotalPriceCalculation(reservationInt, 24000, types);
     });
   });
 });
