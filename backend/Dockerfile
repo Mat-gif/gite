@@ -18,4 +18,4 @@ RUN npm install -g ts-node
 EXPOSE 3000
 
 # Démarrer l'application ( mode développement : rechargement automatique)
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:prod"]

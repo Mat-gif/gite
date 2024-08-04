@@ -139,8 +139,8 @@ export class AppService {
       nightWeek: nights[0] * reservationInt.rooms.length,
       nightWeekend: nights[1] * reservationInt.rooms.length,
       totalPrice:
-        (nights[0] * weekendPrice.price +
-          nights[1] * weekPrice.price +
+        (nights[0] * weekPrice.price +
+          nights[1] * weekendPrice.price +
           extra * extraPrice.price) *
         reservationInt.rooms.length,
     };
