@@ -1,12 +1,8 @@
-// src/Alert.tsx
-
 import React, { useState, useEffect } from "react";
 import ReservationCard from "./ReservationCard";
-import { Reservation } from "../App";
 import axios, {AxiosError} from "axios";
-import Swal from "sweetalert2";
-import ReservationTable from "./ReservationTable";
-import PriceTable from "./PriceTable";
+import {Reservation} from "../interface/interface";
+
 
 interface AdminProps {}
 

@@ -1,8 +1,9 @@
 
 import React, {useState} from 'react';
-import {Room,Reservation} from "../App";
 import axios, {AxiosError} from "axios";
-import Alert from "./Alert";
+import Alert from "../../share-component/Alert";
+import Button from "../../share-component/Button";
+import {Reservation, Room} from "../../interface/interface";
 
 
 interface ReservationFormProps {
@@ -12,7 +13,6 @@ interface ReservationFormProps {
     onReservationCalculate: (reservation: Reservation) => void;
 
 }
-
 
 
 const ReservationForm: React.FC<ReservationFormProps> = ({ roomsSelected, start,end,onReservationCalculate }) => {
@@ -89,9 +89,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ roomsSelected, start,
                         </div>
                     </div>
                     <div className="col-auto">
-                        <button type="submit" className="btn btn-primary">
-                            Calculer le tarif
-                        </button>
+                        <Button message={"Calculer le tarif"} type={"submit"}/>
                     </div>
                 </div>
             </form>

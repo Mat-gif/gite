@@ -1,10 +1,10 @@
 import React from 'react';
-import { Reservation } from "../App";
 import {format} from "date-fns";
 import {fr} from "date-fns/locale";
 import Swal from "sweetalert2";
-import PriceTable from "./PriceTable";
+import PriceTable from "../user/reservation/PriceTable";
 import ReactDOMServer from 'react-dom/server';
+import {Reservation} from "../interface/interface";
 
 interface ReservationCardProps {
     reservations?: Reservation[];

@@ -1,8 +1,13 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Room } from '../entities/room.entity';
+import { Injectable } from '@nestjs/common';
 
-@EntityRepository(Room)
+@Injectable()
 export class RoomRepository extends Repository<Room> {
+  constructor(private dataSource: DataSource) {
+    super(Room, dataSource.createEntityManager());
+  }
+
   async findAvailableRooms(start: Date, end: Date): Promise<Room[]> {
     const occupiedRooms = await this.createQueryBuilder('room')
       .leftJoin('room.reservations', 'reservation')

@@ -1,7 +1,5 @@
-// src/Alert.tsx
 import React from 'react';
 
-// Définir l'interface pour les props
 interface AlertProps {
     message: string;
 }

@@ -3,17 +3,20 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Res,
 } from '@nestjs/common';
-import { AppService, ReservationInt } from './app.service';
+import { AppService } from './app.service';
 import { Reservation } from './entities/reservation.entity';
 import { Response } from 'express';
+import { ReservationInt } from './interfaces/reservation.interface';
 
 @Controller('api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
+  private readonly logger = new Logger(AppService.name);
 
   @Get('reservations')
   async getAllReservations(): Promise<Reservation[]> {
@@ -33,6 +36,7 @@ export class AppController {
           await this.appService.getRoomsNotBusy(new Date(start), new Date(end)),
         );
     } catch (error) {
+      this.logger.error(error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
     }
   }
@@ -47,6 +51,7 @@ export class AppController {
         .status(HttpStatus.OK)
         .json(await this.appService.calculateReservation(reservationInt));
     } catch (error) {
+      this.logger.error(error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
     }
   }
@@ -61,6 +66,7 @@ export class AppController {
         .status(HttpStatus.OK)
         .json(await this.appService.createReservation(reservation));
     } catch (error) {
+      this.logger.error(error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
     }
   }

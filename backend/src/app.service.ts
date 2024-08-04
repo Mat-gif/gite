@@ -5,14 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 import { Price } from './entities/price.entity';
 import { RoomRepository } from './repositories/room.repository';
-
-export interface ReservationInt {
-  rooms: Room[];
-  email: string;
-  start: Date;
-  end: Date;
-  extra: boolean;
-}
+import { ReservationInt } from './interfaces/reservation.interface';
 
 @Injectable()
 export class AppService {
@@ -21,7 +14,6 @@ export class AppService {
   constructor(
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
-    @InjectRepository(Room)
     private roomRepository: RoomRepository,
     @InjectRepository(Price)
     private priceRepository: Repository<Price>,

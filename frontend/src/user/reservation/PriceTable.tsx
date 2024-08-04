@@ -1,5 +1,5 @@
 import React from 'react';
-import {Reservation, Room} from "../App";
+import {Reservation} from "../../interface/interface";
 
 
 interface PriceTableProps {
@@ -11,8 +11,6 @@ const PriceTable: React.FC<PriceTableProps> = ({ reservation }) => {
     const nights = (number : number) => {
         return reservation.rooms.length * number ;
     };
-
-
 
     return (
         <div>

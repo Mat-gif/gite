@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import DatePicker from "./DatePicker";
-import axios, {AxiosError} from "axios";
-import { Room, RoomsSearch} from "../App";
-import Alert from "./Alert";
+import Alert from "../../share-component/Alert";
+import {searchRooms} from "./service/searchService";
+import Button from "../../share-component/Button";
+import {Room, RoomsSearch} from "../../interface/interface";
 
 interface SearchProps {
     onRoomsUpdate: (roomsSearch?: RoomsSearch) => void;
@@ -16,26 +17,17 @@ const Search: React.FC<SearchProps> = ({ onRoomsUpdate }) => {
 
     const handleSearch = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (!start || !end) {
-            setError('Veuillez selectionner des dates');
-            return;
-        }
-        if (start > end) {
-            setError('Le début ne peut etre avant la fin.');
-            return;
-        }
         setError(null);
         try {
-
-            const response = await axios.get<Room[]>(`/api/start/${start}/end/${end}`);
-            setRooms(response.data);
-            if (response.data.length>0  ){
-                onRoomsUpdate({rooms: response.data, start, end});
+            const rooms = await searchRooms(start, end);
+            setRooms(rooms);
+            if (rooms.length > 0) {
+                onRoomsUpdate({ rooms, start, end });
             } else {
-                setError('Aucune chambre disponibles pour ces dates');
+                setError('Aucune chambre disponible pour ces dates');
             }
-        } catch (error) {
-            error instanceof  AxiosError ? setError(error.response?.data): setError("Une erreur est survenue.")
+        } catch (error: any) {
+            setError(error.message);
         }
     };
 
@@ -60,9 +52,7 @@ const Search: React.FC<SearchProps> = ({ onRoomsUpdate }) => {
                         <DatePicker onDateChange={handleDateChange(false)} label={"Arrivée"} isStart={false}/>
                     </div>
                     <div className="col-auto">
-                        <button type="submit" className="btn btn-primary">
-                            Rechercher
-                        </button>
+                        <Button message={"Rechercher"} type={"submit"}/>
                     </div>
                 </div>
             </form>

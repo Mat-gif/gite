@@ -1,5 +1,5 @@
 import React from 'react';
-import {Room} from "../App";
+import {Room} from "../../interface/interface";
 
 interface RoomCardProps {
     room: Room;

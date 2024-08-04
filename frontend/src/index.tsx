@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM, {Root} from 'react-dom/client';
-import './index.css';
+
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Importer le CSS de Bootstrap
-
+import './index.css';
 let root: Root;
 // @ts-ignore
 root = ReactDOM.createRoot(document.getElementById('root'));
