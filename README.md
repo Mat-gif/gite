@@ -22,6 +22,7 @@ Un gîte en Nouvelle-Calédonie souhaite gérer la réservation de ses trois cha
 * Cloner le dépôt : `git clone https://github.com/Mat-gif/test_technique.git`
 * À la racine, lancer l'application via la commande : `docker-compose up --build`
 * La page est accessible à l'URL : [http://localhost:3000/](http://localhost:3000/)
+* Des reserations sont initialisés en BDD
 
 # Quelques tests unitaires ont été mis en place pour le backend
 * Se rendre dans le répertoire `./backend`
