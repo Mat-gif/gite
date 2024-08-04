@@ -103,8 +103,8 @@ describe('AppService', () => {
     types: { [key: string]: any },
   ) => {
     mockPriceRepository(types); /// Mock
-    const result = await service.newReservation(reservationInt, [2, 2]); // Call the service method
-    expect(result.totalPrice).toBe(expectedTotalPrice); // Assertion
+    const result = await service.newReservation(reservationInt, [2, 2]);
+    expect(result.totalPrice).toBe(expectedTotalPrice);
   };
 
   describe('newReservation', () => {
