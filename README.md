@@ -29,7 +29,6 @@ Un gîte en Nouvelle-Calédonie souhaite gérer la réservation de ses trois cha
 
 # Quelques tests unitaires ont été mis en place pour le backend
 Principalement concernant le calcul des nuits et du tarif total
-* Si besoin `npm install`
 * Se rendre dans le répertoire `./backend`
 * Exécuter les tests : `npm run test`
 
