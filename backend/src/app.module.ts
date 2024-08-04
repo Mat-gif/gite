@@ -5,7 +5,6 @@ import { Room } from './entities/room.entity';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { Price } from './entities/price.entity';
-import { RoomRepository } from './repositories/room.repository';
 
 @Module({
   imports: [
@@ -21,7 +20,7 @@ import { RoomRepository } from './repositories/room.repository';
     }),
     TypeOrmModule.forFeature([Reservation, Room, Price]),
   ],
-  providers: [AppService, RoomRepository],
+  providers: [AppService],
   exports: [AppService],
   controllers: [AppController],
 })

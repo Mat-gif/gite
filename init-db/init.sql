@@ -51,8 +51,8 @@ INSERT INTO Price (type, price) VALUES
 
 -- Insertion dans Reservation
 INSERT INTO Reservation (email, start, end, nightWeek, nightWeekend, totalPrice, extra,nightWeekPrice,nightWeekendPrice,extraPrice) VALUES
-('test@example.com', '2024-08-01 15:00:00', '2024-08-04 11:00:00', 2, 1, 17000, TRUE,5000,7000,1000),
-('user@example.com', '2024-08-10 14:00:00', '2024-08-12 11:00:00', 0, 2, 14000, FALSE,5000,7000,1000);
+('test@example.com', '2024-08-01 15:00:00', '2024-08-04 11:00:00', 1, 2, 20000, TRUE,5000,7000,1000),
+('user@example.com', '2024-08-10 14:00:00', '2024-08-12 11:00:00', 1, 1, 12000, FALSE,5000,7000,1000);
 
 
 INSERT INTO reservation_rooms (reservation_id, room_id) VALUES

@@ -8,9 +8,6 @@ interface PriceTableProps {
 const PriceTable: React.FC<PriceTableProps> = ({ reservation }) => {
 
 
-    const nights = (number : number) => {
-        return reservation.rooms.length * number ;
-    };
 
     return (
         <div>
@@ -26,15 +23,15 @@ const PriceTable: React.FC<PriceTableProps> = ({ reservation }) => {
                 <tbody>
                 <tr>
                     <th scope="row">Nuits Semaine</th>
-                    <td>{nights(reservation.nightWeek)}</td>
+                    <td>{reservation.nightWeek}</td>
                     <td>{reservation.nightWeekPrice}</td>
-                    <td>{nights(reservation.nightWeek)*reservation.nightWeekPrice}</td>
+                    <td>{reservation.nightWeek*reservation.nightWeekPrice}</td>
                 </tr>
                 <tr>
                     <th scope="row">Nuits Weekend</th>
-                    <td>{nights(reservation.nightWeekend)}</td>
+                    <td>{reservation.nightWeekend}</td>
                     <td>{reservation.nightWeekendPrice}</td>
-                    <td>{nights(reservation.nightWeekend)*reservation.nightWeekendPrice}</td>
+                    <td>{reservation.nightWeekend*reservation.nightWeekendPrice}</td>
                 </tr>
                 <tr>
                     <th scope="row">Lit Parapluie</th>
@@ -46,7 +43,7 @@ const PriceTable: React.FC<PriceTableProps> = ({ reservation }) => {
                     <th scope="row">Total</th>
                     <td></td>
                     <td></td>
-                    <td>{reservation.totalPrice*reservation.rooms.length}</td>
+                    <td>{reservation.totalPrice}</td>
                 </tr>
                 </tbody>
             </table>

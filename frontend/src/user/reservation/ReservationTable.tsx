@@ -1,11 +1,11 @@
 import React from 'react';
 import axios, {AxiosError} from "axios";
-import PriceTable from "../user/reservation/PriceTable";
-import {showErrorAlert, showSuccessAlert} from "../share-component/service/alerteService";
-import TableHeader from "../share-component/TableHeader";
-import TableRoomRow from "../share-component/TableRoomRow";
-import Button from "../share-component/Button";
-import {Reservation} from "../interface/interface";
+import PriceTable from "./PriceTable";
+import {showErrorAlert, showSuccessAlert} from "../../share-component/service/alerteService";
+import TableHeader from "../../share-component/TableHeader";
+import TableRoomRow from "../../share-component/TableRoomRow";
+import Button from "../../share-component/Button";
+import {Reservation} from "../../interface/interface";
 
 interface ReservationTableProps {
     reservation: Reservation;

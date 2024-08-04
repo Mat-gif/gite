@@ -16,7 +16,7 @@ const RoomRow: React.FC<RoomRowProps> = ({ reservation }) => {
                     <td>{room.name}</td>
                     <td>
                         du {format(reservation.start, 'dd MMMM yyyy', { locale: fr })}
-                        au {format(reservation.end, 'dd MMMM yyyy', { locale: fr })}
+                         au {format(reservation.end, 'dd MMMM yyyy', { locale: fr })}
                     </td>
                 </tr>
             ))}

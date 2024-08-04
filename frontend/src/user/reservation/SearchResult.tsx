@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import RoomCard from "./RoomCard";
 import {toggleRoomSelection} from "./service/roomSelectionService";
 import ReservationForm from "./ReservationForm";
-import ReservationTable from "../../admin/ReservationTable";
+import ReservationTable from "./ReservationTable";
 import {Reservation, Room, RoomsSearch} from "../../interface/interface";
 
 interface ResultSearchProps {

@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 import { Price } from './entities/price.entity';
-import { RoomRepository } from './repositories/room.repository';
 import { ReservationInt } from './interfaces/reservation.interface';
 
 @Injectable()
@@ -14,7 +13,8 @@ export class AppService {
   constructor(
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
-    private roomRepository: RoomRepository,
+    @InjectRepository(Room)
+    private roomRepository: Repository<Room>,
     @InjectRepository(Price)
     private priceRepository: Repository<Price>,
   ) {}
@@ -31,7 +31,25 @@ export class AppService {
         'La date de début ou de fin ne doit pas être un lundi.',
       );
     }
-    return await this.roomRepository.findAvailableRooms(start, end);
+    const occupiedRooms = await this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.reservations', 'reservation')
+      .where('reservation.start < :endDate AND reservation.end > :startDate', {
+        startDate: start,
+        endDate: end,
+      })
+      .getMany();
+
+    const occupiedRoomIds = occupiedRooms.map((room) => room.id);
+
+    // Récupérer toutes les chambres et exclure celles qui sont occupées
+    const roomsQueryBuilder = this.roomRepository.createQueryBuilder('room');
+    if (occupiedRoomIds.length > 0) {
+      roomsQueryBuilder.where('room.id NOT IN (:...occupiedRoomIds)', {
+        occupiedRoomIds,
+      });
+    }
+    return await roomsQueryBuilder.getMany();
   }
 
   // calcul des nombres de nuit
@@ -73,11 +91,17 @@ export class AppService {
 
   // ajouter une réservation
   async createReservation(reservation: Reservation) {
-    const occupiedRooms = await this.roomRepository.checkRoomAvailability(
-      reservation.start,
-      reservation.end,
-      reservation.rooms.map((room) => room.id),
-    );
+    const occupiedRooms = await this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.reservations', 'reservation')
+      .where('reservation.start < :endDate AND reservation.end > :startDate', {
+        startDate: reservation.start,
+        endDate: reservation.end,
+      })
+      .andWhere('room.id IN (:...roomIds)', {
+        roomIds: reservation.rooms.map((room) => room.id),
+      })
+      .getMany();
 
     if (occupiedRooms.length > 0) {
       throw new BadRequestException("La chambre n'est plus disponible.");
@@ -109,8 +133,8 @@ export class AppService {
       extra: reservationInt.extra,
       rooms: reservationInt.rooms,
       start: reservationInt.start,
-      nightWeekPrice: weekendPrice.price,
-      nightWeekendPrice: weekPrice.price,
+      nightWeekPrice: weekPrice.price,
+      nightWeekendPrice: weekendPrice.price,
       extraPrice: extraPrice.price,
       nightWeek: nights[0] * reservationInt.rooms.length,
       nightWeekend: nights[1] * reservationInt.rooms.length,
