@@ -4,6 +4,7 @@ Un gîte en Nouvelle-Calédonie souhaite gérer la réservation de ses trois cha
 # Analyse
 * Tarif week-end de 7000 XPF (vendredi -> samedi et samedi -> dimanche)
 * Tarif semaine de 5000 XPF pour les autres nuits
+* Option lit parapluie
 * Fermé le lundi : arrivée possible tous les jours sauf le lundi (la nuit du lundi est fermée). Départ possible tous les jours sauf le mardi (car fermé le lundi).
 * Gérer les réservations pour ne pas accepter plusieurs réservations pour une chambre sur une même période.
 * Une réservation peut être réalisée sur plusieurs chambres.
