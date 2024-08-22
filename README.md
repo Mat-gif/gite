@@ -20,7 +20,7 @@ Un gîte en Nouvelle-Calédonie souhaite gérer la réservation de ses trois cha
 * Back : NestJS
 
 # Lancer l'application
-* Cloner le dépôt : `git clone https://github.com/Mat-gif/test_technique.git`
+* Cloner le dépôt : `git clone https://github.com/Mat-gif/gite.git`
 * Installer les déppendance dans le backend `cd ./backend` puis `npm install`
 * Installer les déppendance dans le frontend `cd ./frontend` puis `npm install` 
 * À la racine, lancer l'application via la commande : `sudo docker-compose up --build`
